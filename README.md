@@ -1,5 +1,5 @@
 # Melopero AMG8833
-![melopero logo](images/hack.png)
+![melopero logo](hack.png)
 
 ## Getting Started
 ### Prerequisites
