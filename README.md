@@ -1,5 +1,5 @@
 # Melopero AMG8833
-![melopero logo](images/sensor.jpg)
+![melopero logo](images/sensor.jpg?raw=true)
 
 ## Getting Started
 ### Prerequisites
