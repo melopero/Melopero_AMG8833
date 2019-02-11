@@ -1,5 +1,5 @@
 # Melopero AMG8833
-![melopero logo](hack.png)
+![melopero logo](images/sensor.jpg)
 
 ## Getting Started
 ### Prerequisites
@@ -33,7 +33,7 @@ The sensor has the following methods
 sensor.set_fps_mode(fps_mode) #sets the fps mode there are only two options: AMGGridEye.FPS_10_MODE or AMGGridEye.FPS_1_MODE 
 sensor.get_fps() #returns the current fps 10 or 1
 sensor.update_pixels_temperature() #updates the pixels matrix
-sensor.get_pixels_temperature_matrix() #returns the last updated pixel matrix
+sensor.get_pixel_temperature_matrix() #returns the last updated pixel matrix
 sensor.get_pixel_temperature(x, y) #returns the spicified pixel's temperature
 sensor.update_temperature() #updates the temperature (not of the pixels),theAMG8833 has a termistor
 sensor.get_temperature() #returns the temperature
@@ -59,7 +59,7 @@ while(True):
 
     #update and print matrix
     sensor.update_pixels_matrix()
-    print(sensor.get_pixels_temperature_matrix())
+    print(sensor.get_pixel_temperature_matrix())
     
     #wait 0.1 seconds
     time.sleep(0.1)
