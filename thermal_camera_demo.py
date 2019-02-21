@@ -27,8 +27,8 @@ def main():
     game_screen = pygame.display.set_mode((resolution*rect_scale, resolution*rect_scale))
     pygame.display.set_caption('grid eye')
     
-    
-    eye = mp.AMGGridEye(0x68)
+    #default address is 0x69, solder the jumper on the back of the board to set 0x68
+    eye = mp.AMGGridEye(0x69)
     eye.set_fps_mode(mp.AMGGridEye.FPS_10_MODE)
     
     #INTERPOLATION
