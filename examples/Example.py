@@ -24,16 +24,16 @@ def main():
     
     resolution = 32
     rect_scale = 8
-    game_screen = pygame.display.set_mode((resolution, resolution))
+    game_screen = pygame.display.set_mode((resolution*rect_scale, resolution*rect_scale))
     pygame.display.set_caption('grid eye')
     
     
-    eye = AMG8833.AMGGridEye()
+    eye = AMG8833.AMGGridEye(0x68)
+    eye.set_fps_mode(AMG8833.AMGGridEye.FPS_10_MODE)
     
     #INTERPOLATION
-    points = [(i//8, i%8) for i in range(64)]
-    grid_x, grid_y = np.mgrid[0:7:resolution, 0:7:resolution]
-
+    points = np.array([(i//8, i%8) for i in range(64)]).reshape(64,2)
+    grid_x, grid_y = np.mgrid[0:7:32j, 0:7:32j]
     
     do_main = True
     while do_main:
@@ -48,9 +48,8 @@ def main():
         
         game_screen.fill((0,0,0))
         
-        
         eye.update_pixels_temperature()
-        matrix = np.array(eye.get_pixel_temperature_matrix())
+        matrix = np.array(eye.get_pixel_temperature_matrix()).reshape(64)
         interpolated_grid = interpolator.griddata(points, matrix, (grid_x, grid_y), method='cubic')
         for i,row in enumerate(interpolated_grid):
             for j,temp in enumerate(row):
@@ -60,7 +59,7 @@ def main():
                 
         pygame.display.update()
         
-        time.sleep(0.1)
+        #time.sleep(0.1)
     
     pygame.quit()
     
@@ -83,7 +82,7 @@ def temp_to_color(temp):
         return blue
     elif temp < green_temp:
         max_temp = green_temp
-        max_temp_col = green_temp
+        max_temp_col = green
     elif temp < yellow_temp:
         max_temp = yellow_temp
         max_temp_col = yellow
