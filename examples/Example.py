@@ -11,7 +11,7 @@ Created on Mon Jan 21 19:17:39 2019
 # imports
 import pygame
 import time
-import AMG8833
+import melopero_amg8833.AMG8833 as mp
 import numpy as np
 import scipy.interpolate as interpolator
 
@@ -28,8 +28,8 @@ def main():
     pygame.display.set_caption('grid eye')
     
     
-    eye = AMG8833.AMGGridEye(0x68)
-    eye.set_fps_mode(AMG8833.AMGGridEye.FPS_10_MODE)
+    eye = mp.AMGGridEye(0x68)
+    eye.set_fps_mode(mp.AMGGridEye.FPS_10_MODE)
     
     #INTERPOLATION
     points = np.array([(i//8, i%8) for i in range(64)]).reshape(64,2)

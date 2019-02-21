@@ -6,10 +6,10 @@ Created on Tue Feb 12 18:19:16 2019
 @author: leoli
 """
 import time
-import melopero-amg8833 as mp
+import melopero_amg8833.AMG8833 as mp
 
-sensor = mp.AMGGridEye()
-sensor.set_fps_mode(mp.AMGGridEye.FPS_10_MODE)
+sensor = mp.AMGGridEye(0x68)
+sensor.set_fps_mode(mp.AMGGridEye.FPS_1_MODE)
 
 while(True):
     #update and print temperature
@@ -17,8 +17,8 @@ while(True):
     print(sensor.get_temperature()) 
 
     #update and print matrix
-    sensor.update_pixels_matrix()
+    sensor.update_pixels_temperature()
     print(sensor.get_pixel_temperature_matrix())
     
-    #wait 0.1 seconds
-    time.sleep(0.1)
+    #wait 1 seconds
+    time.sleep(1)
