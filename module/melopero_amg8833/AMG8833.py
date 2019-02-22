@@ -23,7 +23,7 @@ class AMGGridEye():
     FPS_10_MODE = 0
     FPS_1_MODE = 1
     
-    def __init__(self, i2c_addr = 0x69, i2c_bus = 1):
+    def __init__(self, i2c_addr = 0x68, i2c_bus = 1):
         self._i2c_address = i2c_addr
         self._i2c_bus = i2c_bus
         self._i2c = SMBus(i2c_bus)
