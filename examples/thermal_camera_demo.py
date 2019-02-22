@@ -3,9 +3,7 @@
 """
 Created on Mon Jan 21 19:17:39 2019
 
-@author: leoli
-
-MIT license
+@author: root
 """
 
 
@@ -29,8 +27,8 @@ def main():
     game_screen = pygame.display.set_mode((resolution*rect_scale, resolution*rect_scale))
     pygame.display.set_caption('grid eye')
     
-    #the default address is 0x69, solder the jumper on the back of the board to set 0x68
-    eye = mp.AMGGridEye(0x69)
+    
+    eye = mp.AMGGridEye()
     eye.set_fps_mode(mp.AMGGridEye.FPS_10_MODE)
     
     #INTERPOLATION
