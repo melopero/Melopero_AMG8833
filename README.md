@@ -5,11 +5,11 @@
 ### Prerequisites
 You will need:
 - a python3 version, which you can get here: [download python3](https://www.python.org/downloads/)
-- the AMG8833 grid eye sensor: [buy here](https://www.melopero.com/)
+- the AMG8833 grid eye sensor: [buy here](https://www.melopero.com/en/shop/sensori/melopero-amg8833-grid-eye-ir-array-breakout/)
 
 ### Installing
 You can install the melopero-amg8833 module by typing this line in the terminal: 
-`pip install melopero-amg8833`
+`sudo pip3 install melopero-amg8833`
 
 ## Module description
 The module contains a class to easily access the AMG8833's sensor functions.
@@ -17,7 +17,7 @@ The module contains a class to easily access the AMG8833's sensor functions.
 ### Usage
 First you need to import the module in your file: 
 ```python
-import melopero-amg8833 as mp
+import melopero-amg8833.AMG8833 as mp
 ```
 Then you can create a simple amg8833 object and access it's methods, the sensor object will be initialized with the i2c address set to `0x69` and the i2c bus to `1` alias `(dev/i2c-1)` which is the standard i2c bus in a Raspberry pi. 
 ```python 
@@ -47,7 +47,7 @@ sensor.close()
 The following example will print out the temperature and the pixel temperature matrix every 0.1 seconds (10 fps)
 ```python 
 import time
-import melopero-amg8833 as mp
+import melopero-amg8833.AMG8833 as mp
 
 sensor = mp.AMGGridEye()
 sensor.set_fps_mode(mp.AMGGridEye.FPS_10_MODE)
@@ -58,7 +58,7 @@ while(True):
     print(sensor.get_temperature()) 
 
     #update and print matrix
-    sensor.update_pixels_matrix()
+    sensor.update_pixels_temperature()
     print(sensor.get_pixel_temperature_matrix())
     
     #wait 0.1 seconds
