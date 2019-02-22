@@ -63,8 +63,10 @@ while(True):
     
     #wait 0.1 seconds
     time.sleep(0.1)
+```
 
+### Attention:
 
-
+The module is written in python3 and by now supports only python3, remember to use always `pip3` when you install the module and `python3` when you run the code. 
 
 
