@@ -11,7 +11,7 @@ Created on Mon Jan 21 19:17:39 2019
 # imports
 import pygame
 import time
-import melopero_amg8833.AMG8833 as mp
+import melopero_amg8833 as mp
 import numpy as np
 import scipy.interpolate as interpolator
 

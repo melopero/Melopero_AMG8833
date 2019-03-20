@@ -3,10 +3,10 @@
 """
 Created on Tue Feb 12 18:19:16 2019
 
-@author: leoli
+@author: Leonardo La Rocca
 """
 import time
-import melopero_amg8833.AMG8833 as mp
+import melopero_amg8833 as mp
 
 sensor = mp.AMGGridEye()
 sensor.set_fps_mode(mp.AMGGridEye.FPS_1_MODE)
