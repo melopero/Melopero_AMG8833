@@ -9,7 +9,9 @@ You will need:
 
 ### Installing
 You can install the melopero-amg8833 module by typing this line in the terminal: 
-`sudo pip3 install melopero-amg8833`
+```python
+sudo pip3 install melopero-amg8833
+```
 
 ## Module description
 The module contains a class to easily access the AMG8833's sensor functions.
