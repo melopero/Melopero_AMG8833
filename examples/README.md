@@ -18,5 +18,3 @@ For this demo to work you will need to install numpy, scipy and pygame, numpy an
 Next download the demo and run it:
 `python3 thermal_camera_demo.py`
 
-### How does it work?
-[inserire immagini / gif + spiegazione]
