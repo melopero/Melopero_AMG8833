@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-@author: leoli
+@author: Leonardo La Rocca
 """
 '''
    TODO: write better documentation 
@@ -27,23 +27,23 @@ class AMGGridEye():
         self._i2c_address = i2c_addr
         self._i2c_bus = i2c_bus
         self._i2c = SMBus(i2c_bus)
-        self._fps = 10
         self._pixel_data = [[0]*8 for _ in range(8)]
-        self._temperature = 0
+        self._thermistor_temp = 0
         
     
     def set_fps_mode(self, fps_mode = 0):
         '''Sets how many times per second the pixels should update.\n
            Parameter : fps_mode (int) - can be 0 for 10 FPS or 1 for 1 FPS
         '''
-        assert fps_mode == AMGGridEye.FPS_10_MODE or fps_mode == AMGGridEye.FPS_1_MODE, "FPS mode must be 0 (for 10 fps) or 1 (for 1 fps)!"
-        self._fps = 10 if fps_mode == 0 else 1
+        if fps_mode != AMGGridEye.FPS_1_MODE and fps_mode != AMGGridEye.FPS_10_MODE:
+            raise ValueError("fps_mode must be one of AMGGridEye.FPS_N_MODE")
         self._i2c.write_byte_data(self._i2c_address, _FRAME_RATE_REG_ADDR, fps_mode)
         
         
     def get_fps(self):
         ''' Returns the current FPS settings'''
-        return self._fps
+        reg_data = self._i2c.read_byte_data(self._i2c_address, _FRAME_RATE_REG_ADDR)
+        return 1 if reg_data else 10
     
         
     def update_pixels_temperature(self):
@@ -83,7 +83,7 @@ class AMGGridEye():
     def get_pixel_temperature(self, x, y):
         return self._pixel_data[y][x]  
     
-    def update_temperature(self):
+    def update_thermistor_temperature(self):
         ''' thermistor's data is stored like this:
             reg0 : b7 b6 b5 b4 b3  b2  b1 b0
             reg1 : -- -- -- -- b11 b10 b9 b8
@@ -104,11 +104,11 @@ class AMGGridEye():
         frac_temp = self._to_unsigned_int(bits[8:])
         frac_temp = 0 if frac_temp==0 else 1 / frac_temp
         
-        self._temperature = sign*(int_temp + frac_temp)   
+        self._thermistor_temp = sign*(int_temp + frac_temp)   
     
     
-    def get_temperature(self):
-        return self._temperature
+    def get_thermistor_temperature(self):
+        return self._thermistor_temp
     
     def close(self):
         self._i2c.close()
