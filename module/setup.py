@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name="melopero_amg8833",
-    version="0.1.7",
+    version="0.1.8",
     description="A module to easily access Melopero's AMG8833 sensor's features",
     url="https://github.com/melopero/Melopero_AMG8833/tree/master/module",
     author="Melopero",

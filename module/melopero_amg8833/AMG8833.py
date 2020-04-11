@@ -54,13 +54,10 @@ class AMGGridEye():
             reg1 : -- -- -- -- b11 b10 b9 b8
         '''
         for i, reg_addr in enumerate(range(_FIRST_PIXEL_REG_ADDR,_LAST_PIXEL_REG_ADDR, 2)):
-            bits_7to0 = self._i2c.read_byte_data(self._i2c_address, reg_addr)
-            bits_11to8 = self._i2c.read_byte_data(self._i2c_address, reg_addr+1)
+            lsb = self._i2c.read_byte_data(self._i2c_address, reg_addr)
+            msb = self._i2c.read_byte_data(self._i2c_address, reg_addr+1)
             
-            bits = self._to_bit_list(bits_11to8, 4)
-            bits.extend(self._to_bit_list(bits_7to0,8))
-            
-            self._pixel_data[i//8][i%8] = self._compute_pixel_temp(bits)
+            self._pixel_data[i//8][i%8] = self._compute_pixel_temp(lsb, msb)
             
                 
     def get_pixel_temperature_matrix(self):
@@ -93,16 +90,13 @@ class AMGGridEye():
                 b10 - b4 -> integer part of temperature
                 b3 - b0  -> fraction part of temperature: 1 / value(b3b2b1b0)
         '''
-        bits_7to0  = self._i2c.read_byte_data(self._i2c_address, _TEMPERATURE_REG_ADDR)
-        bits_11to8 = self._i2c.read_byte_data(self._i2c_address, _TEMPERATURE_REG_ADDR + 1)
+        lsb  = self._i2c.read_byte_data(self._i2c_address, _TEMPERATURE_REG_ADDR)
+        msb = self._i2c.read_byte_data(self._i2c_address, _TEMPERATURE_REG_ADDR + 1)
         
-        bits = self._to_bit_list(bits_11to8,4)
-        bits.extend(self._to_bit_list(bits_7to0,8))
-        
-        sign = -1 if bits[0] else 1
-        int_temp = self._to_unsigned_int(bits[1:8])
-        frac_temp = self._to_unsigned_int(bits[8:])
-        frac_temp = 0 if frac_temp==0 else 1 / frac_temp
+        sign = -1 if msb & 0x08 > 0 else 1
+        int_temp = ((msb & 0x07) << 4) | (lsb & 0xF0)
+        frac = (lsb & 0x0F)
+        frac_temp = 0 if frac == 0 else 1 / frac
         
         self._thermistor_temp = sign*(int_temp + frac_temp)   
     
@@ -113,37 +107,8 @@ class AMGGridEye():
     def close(self):
         self._i2c.close()
 
-    def _compute_pixel_temp(self, bits):
-        ''' 
-            The input list must be:
-            [b11, b10, b9, b8, b7, b6, b5, b4, b3, b2, b1, b0]
-            
-            the temperature is obtained like this:
-            temp = - b11 * 2**9 + b10 * 2**8 ... + b2 * 2**0 + (b1 * 2**1 + b0 * 2**0)*0.25
-        '''
-        #return - bits[0] * 2**9 + sum([bits[i] * 2**(11-i-2) for i in range(1, 10)]) + (bits[1] * 2 + bits[0])*0.25
-        return self._to_signed_int(bits[0:10]) + (bits[1] * 2 + bits[0])*0.25
-
-    def _to_unsigned_int(self, bitlist):
-        val = 0
-        for i, bit in enumerate(bitlist):
-            val += bit * 2**(len(bitlist)-1-i)
-        return val
-    
-    
-    def _to_signed_int(self, bitlist):
-        val = - bitlist[0] * 2**(len(bitlist) - 1)
-        val += self._to_unsigned_int(bitlist[1:])
-        return val
-
-
-    def _to_bit_list(self, num, length = None):
-        ret = []
-        while(num != 0):
-            ret.insert(0, num%2)
-            num //= 2
-            
-        if length:
-            if len(ret) < length:
-                ret = [0]*(length - len(ret)) + ret
-        return ret
+    def _compute_pixel_temp(self, lsb, msb):
+        unified_no_sign = ((msb & 7) << 8) | lsb
+        value = 0 if (msb & 8) == 0 else -(1 << 11)
+        value += unified_no_sign
+        return value / 4
