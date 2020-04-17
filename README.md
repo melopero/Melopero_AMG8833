@@ -57,7 +57,7 @@ sensor.set_fps_mode(mp.AMGGridEye.FPS_10_MODE)
 while(True):
     #update and print temperature
     sensor.update_thermistor_temperature()
-    print(sensor.get__thermistor_temperature()) 
+    print(sensor.get_thermistor_temperature()) 
 
     #update and print matrix
     sensor.update_pixels_temperature()
