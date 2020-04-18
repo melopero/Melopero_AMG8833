@@ -34,15 +34,10 @@ The sensor has the following methods
 ```python
 sensor.set_fps_mode(fps_mode) #sets the fps mode there are only two options: AMGGridEye.FPS_10_MODE or AMGGridEye.FPS_1_MODE
 sensor.get_fps() #returns the current fps 10 or 1
-sensor.update_pixels_temperature() #updates the pixels matrix
+sensor.update_pixel_temperature_matrix() #updates the pixels matrix
 sensor.get_pixel_temperature_matrix() #returns the last updated pixel matrix
 sensor.get_pixel_temperature(x, y) #returns the spicified pixel's temperature
-sensor.update_thermistor_temperature() #updates the temperature (not of the pixels),theAMG8833 has a thermistor
-sensor.get_thermistor_temperature() #returns the temperature
-```
-Remember to close the connection after using the sensor
-```python
-sensor.close()
+sensor.get_thermistor_temperature() #returns the temperature of the thermistor
 ```
 
 ## Example
@@ -56,11 +51,10 @@ sensor.set_fps_mode(mp.AMGGridEye.FPS_10_MODE)
 
 while(True):
     #update and print temperature
-    sensor.update_thermistor_temperature()
-    print(sensor.get__thermistor_temperature()) 
+    print(sensor.get__thermistor_temperature())
 
     #update and print matrix
-    sensor.update_pixels_temperature()
+    sensor.update_pixel_temperature_matrix()
     print(sensor.get_pixel_temperature_matrix())
 
     #wait 0.1 seconds
