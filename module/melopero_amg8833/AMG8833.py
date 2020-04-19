@@ -37,8 +37,8 @@ class AMGGridEye():
     FPS_10_MODE = 0
     FPS_1_MODE = 1
     
-    MIN_THR_TEMP = -40
-    MAX_THR_TEMP = 120
+    MIN_THR_TEMP = -2000
+    MAX_THR_TEMP = 2000
     
     def __init__(self, i2c_addr = 0x69, i2c_bus = 1):
         self._i2c_address = i2c_addr
