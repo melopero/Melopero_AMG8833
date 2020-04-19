@@ -12,22 +12,137 @@
 from smbus2 import SMBusWrapper
 
 #=========== REGISTERS ADDRESSES ===========#
+_MODE_REG_ADDR = 0x00
+_RESET_REG_ADDR = 0x01
 _FRAME_RATE_REG_ADDR = 0x02
+_INTERRUPT_CONTROL_REG_ADDR = 0x03
+_STATUS_REG_ADDR = 0x04
+_CLEAR_STATUS_REG_ADDR = 0x05
+_INT_THR_HIGH_L_REG_ADDRESS = 0x08
+_INT_THR_HIGH_H_REG_ADDRESS = 0x09
+_INT_THR_LOW_L_REG_ADDRESS = 0x0A
+_INT_THR_LOW_H_REG_ADDRESS = 0x0B
+_INT_TABLE_FIRST_ROW = 0x10
+_INT_TABLE_LAST_ROW = 0x17
 _FIRST_PIXEL_REG_ADDR = 0x80
 _LAST_PIXEL_REG_ADDR = 0xFF
 _TEMPERATURE_REG_ADDR = 0x0E
 
 class AMGGridEye():
-    ''' A class to easily handle the AMG8833 Grid Eye's funtionalities'''
+    ''' A class to easily handle the AMG8833 Grid Eye's functionalities'''
+    
+    NORMAL_MODE = 0x00
+    SLEEP_MODE = 0x10
+    STAND_BY_60_SEC_INTERMITTANCE_MODE = 0x20
+    STAND_BY_10_SEC_INTERMITTANCE_MODE = 0x21
+    
+    INTERRUPT_DIFFERENCE_MODE = 0
+    INTERRUPT_ABSOLUTE_VALUE_MODE = 1
     
     FPS_10_MODE = 0
     FPS_1_MODE = 1
+    
+    MIN_THR_TEMP = -40
+    MAX_THR_TEMP = 120
     
     def __init__(self, i2c_addr = 0x69, i2c_bus = 1):
         self._i2c_address = i2c_addr
         self._i2c_bus = i2c_bus
         self._last_pixel_data = [[0]*8 for _ in range(8)] 
+        self._last_interrupt_table = [[False]*8 for _ in range(8)]
+        
+    def read_byte(self, reg_address):
+        with SMBusWrapper(self._i2c_bus) as bus:
+            value = bus.read_byte_data(self._i2c_address, reg_address)
+        return value
     
+    def write_byte(self, reg_address, value):
+        with SMBusWrapper(self._i2c_bus) as bus:
+            bus.write_byte_data(self._i2c_address, reg_address, value)
+        
+    def set_mode(self, device_mode):
+        '''Set's the device operating mode.\n
+        :device_mode: must be one of NORMAL_MODE, SLEEP_MODE, 
+            STAND_BY_N_INTERMITTANCE_MODE.\n
+        Note:
+            Writing operations in Sleep mode are not permitted. Just the set_mode to 
+            NORMAL_MODE is permitted.
+            Reading operations in Sleep mode are not permitted.
+        '''
+        if device_mode != 0x00 and device_mode != 0x10 and device_mode != 0x20 and device_mode != 0x21:
+            raise ValueError("device_mode must be one of NORMAL_MODE, SLEEP_MODE, STAND_BY_N_INTERMITTANCE_MODE.")
+        
+        self.write_byte(_MODE_REG_ADDR, device_mode)
+        
+    def get_status(self):
+        ''' Returns a dictionary containing information about the status of the device.'''
+        status = dict()
+        status_reg = self.read_byte(_STATUS_REG_ADDR)
+        status["Thermistor temp. overflow"] = bool(status_reg & 0x08)
+        status["Pixel temp. overflow"] = bool(status_reg & 0x04)
+        status["Interrupt"] = bool(status_reg & 0x02)
+        return status
+    
+    def clear_flags(self, interrupt_clear = True, pixel_temp_clear = True, therm_temp_clear = True):
+        '''Clears the specified flags'''
+        value = therm_temp_clear << 3 | pixel_temp_clear << 2 | interrupt_clear << 1
+        self.write_byte(_CLEAR_STATUS_REG_ADDR, value)
+            
+    def reset_flags(self):
+        '''Clears the Status Register, Interrupt Flag, and Interrupt Table.'''
+        self.write_byte(_RESET_REG_ADDR, 0x30)
+    
+    def reset_flags_and_settings(self):
+        '''Resets flags and returns to initial setting.'''
+        self.write_byte(_RESET_REG_ADDR, 0x3F)
+        
+    def enable_interrupt(self, interrupt_enable = True, interrupt_mode = INTERRUPT_ABSOLUTE_VALUE_MODE):
+        ''' Sets the interrupt mode.\n
+        :interrupt_mode: must be INTERRUPT_DIFFERENCE_MODE or INTERRUPT_ABSOLUTE_VALUE_MODE.
+        '''
+        if interrupt_mode != 0 and interrupt_mode != 1:
+            raise ValueError("interrupt_mode must be INTERRUPT_DIFFERENCE_MODE or INTERRUPT_ABSOLUTE_VALUE_MODE.")
+        
+        value = interrupt_mode << 1 | interrupt_enable
+        self.write_byte(_INTERRUPT_CONTROL_REG_ADDR, value)
+
+    def set_interrupt_thresholds(self, low_threshold, high_threshold, hysteris_lvl = None): 
+        '''Set the low and high threshold values for the interrupt. The values 
+        must be provided in Celsius degrees.
+        '''
+        def to_reg_format(temp):
+            reg_format = int(abs(temp) * 4)
+            if temp < 0:
+                reg_format |= (1 << 12)
+                reg_format = ~reg_format
+                reg_format |= (1 << 12)
+                reg_format += 1
+            return reg_format
+        
+        if not (AMGGridEye.MIN_THR_TEMP < low_threshold < AMGGridEye.MAX_THR_TEMP
+                and AMGGridEye.MIN_THR_TEMP < high_threshold < AMGGridEye.MAX_THR_TEMP):
+            raise ValueError("low_threshold and high_threshold must be in range [MIN_THR_TEMP; MAX_THR_TEMP]")
+        
+        low_t_reg_value = to_reg_format(low_threshold)
+        high_t_reg_value = to_reg_format(high_threshold)
+        
+        self.write_byte(_INT_THR_HIGH_L_REG_ADDRESS, high_t_reg_value & 0xFF)
+        self.write_byte(_INT_THR_HIGH_H_REG_ADDRESS, (high_t_reg_value & 0xF00) >> 8)
+        self.write_byte(_INT_THR_LOW_L_REG_ADDRESS, low_t_reg_value & 0xFF)
+        self.write_byte(_INT_THR_LOW_H_REG_ADDRESS, (low_t_reg_value & 0xF00) >> 8)
+        
+    def update_interrupt_table(self):
+        '''Updates the interrupt table. The int. table is an 8*8 matrix of booleans
+        where if table[row][col] is True -> The pixel row col generated an interrupt.
+        '''
+        for row_index, row_address in enumerate(range(_INT_TABLE_FIRST_ROW, _INT_TABLE_LAST_ROW + 1)):
+            row_reg = self.read_byte(row_address)
+            for col_index in range(8):
+                self._last_interrupt_table[row_index][col_index] = bool(row_reg & (1 << col_index))
+    
+    def get_interrupt_table(self):
+        return self._last_interrupt_table
+            
     def set_fps_mode(self, fps_mode = 0):
         '''Sets how many times per second the pixels should update.\n
            Parameter : fps_mode (int) - can be 0 for 10 FPS or 1 for 1 FPS
@@ -35,13 +150,11 @@ class AMGGridEye():
         if fps_mode != AMGGridEye.FPS_1_MODE and fps_mode != AMGGridEye.FPS_10_MODE:
             raise ValueError("fps_mode must be one of AMGGridEye.FPS_N_MODE")
         
-        with SMBusWrapper(self._i2c_bus) as bus:
-            bus.write_byte_data(self._i2c_address, _FRAME_RATE_REG_ADDR, fps_mode)
+        self.write_byte(_FRAME_RATE_REG_ADDR, fps_mode)
         
     def get_fps(self):
         ''' Returns the current FPS settings'''
-        with SMBusWrapper(self._i2c_bus) as bus:
-            reg_data = bus.read_byte_data(self._i2c_address, _FRAME_RATE_REG_ADDR)
+        reg_data = self.read_byte(_FRAME_RATE_REG_ADDR)
         return 1 if reg_data else 10            
                 
     def update_pixel_temperature_matrix(self):
