@@ -3,11 +3,6 @@
 """
 @author: Leonardo La Rocca
 """
-'''
-   TODO: write better documentation 
-   TODO: implement missing features
-   TODO: clean up code 
-'''
 
 from smbus2 import SMBusWrapper
 
@@ -172,17 +167,17 @@ class AMGGridEye():
                  [56, 57, 58, 59, 60, 61, 62, 63]\n
             ]
         '''
+        def to_celsius_temperature(lsb_byte, msb_byte):
+            unified_no_sign = ((msb_byte & 7) << 8) | lsb_byte
+            value = 0 if (msb_byte & 8) == 0 else -(1 << 11)
+            value += unified_no_sign
+            return value / 4
+        
         with SMBusWrapper(self._i2c_bus) as bus:
             for i, reg_addr in enumerate(range(_FIRST_PIXEL_REG_ADDR,_LAST_PIXEL_REG_ADDR, 2)):
                 lsb = bus.read_byte_data(self._i2c_address, reg_addr)
                 msb = bus.read_byte_data(self._i2c_address, reg_addr+1)
-                self._last_pixel_data[i//8][i%8] = self._compute_pixel_temp(lsb, msb)
-                    
-    def _compute_pixel_temp(self, lsb, msb):
-        unified_no_sign = ((msb & 7) << 8) | lsb
-        value = 0 if (msb & 8) == 0 else -(1 << 11)
-        value += unified_no_sign
-        return value / 4
+                self._last_pixel_data[i//8][i%8] = to_celsius_temperature(lsb, msb)
     
     def get_pixel_temperature_matrix(self):
         return self._last_pixel_data
