@@ -7,6 +7,8 @@ import time
 import melopero_amg8833 as mp
 
 sensor = mp.AMGGridEye()
+sensor.reset_flags_and_settings()
+time.sleep(.1)
 sensor.set_fps_mode(mp.AMGGridEye.FPS_1_MODE)
 
 while(True):

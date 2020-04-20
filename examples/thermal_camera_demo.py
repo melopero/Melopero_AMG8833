@@ -29,6 +29,8 @@ def main():
     
     
     eye = mp.AMGGridEye()
+    eye.reset_flags_and_settings()
+    time.sleep(.1)
     eye.set_fps_mode(mp.AMGGridEye.FPS_10_MODE)
     
     #INTERPOLATION

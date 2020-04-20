@@ -10,6 +10,8 @@ high_threshold = 26
 low_threshold = -10 #dont want it to fire
 
 sensor = mp.AMGGridEye()
+sensor.reset_flags_and_settings()
+time.sleep(.1)
 sensor.set_fps_mode(mp.AMGGridEye.FPS_1_MODE)
 sensor.set_interrupt_thresholds(low_threshold, high_threshold)
 sensor.enable_interrupt()
