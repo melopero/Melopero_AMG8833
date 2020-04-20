@@ -17,6 +17,8 @@ _INT_THR_HIGH_L_REG_ADDRESS = 0x08
 _INT_THR_HIGH_H_REG_ADDRESS = 0x09
 _INT_THR_LOW_L_REG_ADDRESS = 0x0A
 _INT_THR_LOW_H_REG_ADDRESS = 0x0B
+_INT_HYSTERESIS_L_REG_ADDRESS = 0x0C
+_INT_HYSTERESIS_H_REG_ADDRESS = 0x0D
 _INT_TABLE_FIRST_ROW = 0x10
 _INT_TABLE_LAST_ROW = 0x17
 _FIRST_PIXEL_REG_ADDR = 0x80
@@ -101,7 +103,7 @@ class AMGGridEye():
         value = interrupt_mode << 1 | interrupt_enable
         self.write_byte(_INTERRUPT_CONTROL_REG_ADDR, value)
 
-    def set_interrupt_thresholds(self, low_threshold, high_threshold, hysteris_lvl = None): 
+    def set_interrupt_thresholds(self, low_threshold, high_threshold, hysteresis_lvl = 0): 
         '''Set the low and high threshold values for the interrupt. The values 
         must be provided in Celsius degrees.
         '''
@@ -120,11 +122,14 @@ class AMGGridEye():
         
         low_t_reg_value = to_reg_format(low_threshold)
         high_t_reg_value = to_reg_format(high_threshold)
+        hyst_reg_value = to_reg_format(hysteresis_lvl)
         
         self.write_byte(_INT_THR_HIGH_L_REG_ADDRESS, high_t_reg_value & 0xFF)
         self.write_byte(_INT_THR_HIGH_H_REG_ADDRESS, (high_t_reg_value & 0xF00) >> 8)
         self.write_byte(_INT_THR_LOW_L_REG_ADDRESS, low_t_reg_value & 0xFF)
         self.write_byte(_INT_THR_LOW_H_REG_ADDRESS, (low_t_reg_value & 0xF00) >> 8)
+        self.write_byte(_INT_HYSTERESIS_L_REG_ADDRESS, hyst_reg_value & 0xFF)
+        self.write_byte(_INT_HYSTERESIS_H_REG_ADDRESS, (hyst_reg_value & 0xF00) >> 8)
         
     def update_interrupt_table(self):
         '''Updates the interrupt table. The int. table is an 8*8 matrix of booleans

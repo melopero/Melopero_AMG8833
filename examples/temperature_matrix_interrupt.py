@@ -29,8 +29,6 @@ while(True):
     if status["Interrupt"]:
         sensor.update_interrupt_table()
         print(sensor.get_interrupt_table())
-    
-    sensor.reset_flags()
-    
+        
     #wait 1 seconds
     time.sleep(1)
