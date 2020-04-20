@@ -48,7 +48,7 @@ def main():
         
         game_screen.fill((0,0,0))
         
-        eye.update_pixels_temperature()
+        eye.update_pixel_temperature_matrix()
         matrix = np.array(eye.get_pixel_temperature_matrix()).reshape(64)
         interpolated_grid = interpolator.griddata(points, matrix, (grid_x, grid_y), method='cubic')
         for i,row in enumerate(interpolated_grid):
