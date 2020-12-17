@@ -4,7 +4,7 @@
 @author: Leonardo La Rocca
 """
 
-from smbus2 import SMBusWrapper
+from smbus2 import SMBus
 
 #=========== REGISTERS ADDRESSES ===========#
 _MODE_REG_ADDR = 0x00
@@ -49,12 +49,12 @@ class AMGGridEye():
         self._last_interrupt_table = [[False]*8 for _ in range(8)]
         
     def read_byte(self, reg_address):
-        with SMBusWrapper(self._i2c_bus) as bus:
+        with SMBus(self._i2c_bus) as bus:
             value = bus.read_byte_data(self._i2c_address, reg_address)
         return value
     
     def write_byte(self, reg_address, value):
-        with SMBusWrapper(self._i2c_bus) as bus:
+        with SMBus(self._i2c_bus) as bus:
             bus.write_byte_data(self._i2c_address, reg_address, value)
         
     def set_mode(self, device_mode):
@@ -178,7 +178,7 @@ class AMGGridEye():
             value += unified_no_sign
             return value / 4
         
-        with SMBusWrapper(self._i2c_bus) as bus:
+        with SMBus(self._i2c_bus) as bus:
             for i, reg_addr in enumerate(range(_FIRST_PIXEL_REG_ADDR,_LAST_PIXEL_REG_ADDR, 2)):
                 lsb = bus.read_byte_data(self._i2c_address, reg_addr)
                 msb = bus.read_byte_data(self._i2c_address, reg_addr+1)
@@ -199,7 +199,7 @@ class AMGGridEye():
         #        b11      -> sign +1 or -1
         #        b10 - b4 -> integer part of temperature
         #        b3 - b0  -> fraction part of temperature: 1 / value(b3b2b1b0)
-        with SMBusWrapper(self._i2c_bus) as bus:
+        with SMBus(self._i2c_bus) as bus:
             lsb  = bus.read_byte_data(self._i2c_address, _TEMPERATURE_REG_ADDR)
             msb = bus.read_byte_data(self._i2c_address, _TEMPERATURE_REG_ADDR + 1)
         
