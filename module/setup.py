@@ -16,6 +16,6 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
     ],
-    install_requires=["smbus2"],
+    install_requires=["smbus2>=0.4"],
 )
 
